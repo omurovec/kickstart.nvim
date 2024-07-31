@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -182,10 +182,14 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<leader>h', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+vim.keymap.set('n', '<leader>l', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<leader>j', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<leader>k', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+vim.keymap.set('n', '<leader>ws', '<C-w>s', { desc = 'Split window horizontally' })
+vim.keymap.set('n', '<leader>wv', '<C-w>v', { desc = 'Split window vertically' })
+vim.keymap.set('n', '<leader>wd', '<C-w>q', { desc = 'Close window' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -227,6 +231,19 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'nyoom-engineering/oxocarbon.nvim',
+  'xiyaowong/transparent.nvim',
+  {
+    'natecraddock/workspaces.nvim',
+    config = function()
+      local workspaces = require 'workspaces'
+      workspaces.setup {
+        hooks = {
+          open = { 'Telescope find_files' },
+        },
+      }
+    end,
+  },
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -251,6 +268,115 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+
+  {
+    'utilyre/barbecue.nvim',
+    name = 'barbecue',
+    version = '*',
+    dependencies = {
+      'SmiteshP/nvim-navic',
+      'nvim-tree/nvim-web-devicons', -- optional dependency
+    },
+  },
+
+  -- {
+  --   'pwntester/octo.nvim',
+  --   requires = {
+  --     'nvim-lua/plenary.nvim',
+  --     'nvim-telescope/telescope.nvim',
+  --     'nvim-tree/nvim-web-devicons',
+  --   },
+  --   config = function()
+  --     local octo = require 'octo'
+  --     octo.setup()
+  --   end,
+  -- },
+
+  {
+    'ruifm/gitlinker.nvim',
+    config = function()
+      local gitlinker = require 'gitlinker'
+      gitlinker.setup()
+      vim.api.nvim_set_keymap(
+        'n',
+        '<leader>gY',
+        '<cmd>lua require"gitlinker".get_buf_range_url("n", {action_callback = require"gitlinker.actions".copy_to_clipboard})<cr>',
+        { silent = true, desc = '[G]it [Y]ank Permalink' }
+      )
+      vim.api.nvim_set_keymap(
+        'n',
+        '<leader>gy',
+        '<cmd>lua require"gitlinker".get_repo_url({action_callback = require"gitlinker.actions".copy_to_clipboard})<cr>',
+        { silent = true, desc = '[G]it [y]ank url' }
+      )
+    end,
+  },
+
+  {
+    'ahmedkhalf/project.nvim',
+    config = function()
+      require('project_nvim').setup()
+    end,
+  },
+
+  {
+    'nvim-tree/nvim-web-devicons',
+    config = function()
+      require('nvim-web-devicons').setup()
+    end,
+  },
+
+  {
+    'goolord/alpha-nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      local alpha = require 'alpha'
+      local theme = require 'alpha.themes.theta'
+      theme.header.val = {
+        [[]],
+        [[]],
+        [[]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⣶⣶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⢀⣾⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⢰⣶⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠉⢀⣠⣼⣿⣿⣿⣿⣿⡟⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠄⠊⢰⣶⣤⣽⣿⣿⣿⣿⣿⣿⠁⢻⣿⣷⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠊⠀⠀⢀⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⢿⣿⠃⠀⠀⠀⠀⠀⠀]],
+        [[⠚⠛⢿⣿⣿⣷⣶⣶⣶⣥⣤⣄⣈⣀⣐⣚⣛⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠛⢦⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠉⠙⠛⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⡿⣿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⢈⣉⠉⠳⣦⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠁⠈⠙⡆⠹⣻⡿⡏⠘⣿⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣦⡄⠀]],
+        [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠂⠀⠀⢸⠢⡑⠁⢰⡄⠈⢿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠉⠉⠁⠀⠀]],
+        [[⠀⠀⠀⠀⠀⠀⣀⠄⡰⠃⠀⣴⡦⠳⡆⢀⡾⣸⣿⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠀⢠⡺⢁⠴⢁⢀⠾⡎⢡⢟⠜⠉⢠⠋⡸⢸⣆⣜⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⠠⢂⠠⠃⠀⡎⠘⠘⠀⠁⢎⡴⠂⢀⡼⠁⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀]],
+        [[⠀⠀⠀⡐⠁⣀⠀⠀⡇⡇⠀⠀⠀⡞⠀⣰⣟⣴⣵⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀]],
+        [[⠀⠀⡐⣡⢾⠇⠀⢀⡇⠇⠀⡠⠀⡁⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀]],
+        [[⠀⠀⣼⣟⢸⠃⡔⠋⠉⠀⡀⠇⢰⣷⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀]],
+        [[⠀⢠⣿⣿⣿⣿⠀⠀⣠⣞⣀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⠀]],
+        [[⢀⣿⣿⣿⣿⣿⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀]],
+        [[⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆]],
+      }
+      alpha.setup(theme.config)
+    end,
+  },
+
+  {
+    'NeogitOrg/neogit',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'sindrets/diffview.nvim',
+      'ibhagwan/fzf-lua',
+    },
+    config = function()
+      local neogit = require 'neogit'
+      vim.keymap.set('n', '<leader>gg', function()
+        require('neogit').open { kind = 'vsplit' }
+      end, { desc = '[G]it' })
+      return neogit.setup {}
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -300,6 +426,7 @@ require('lazy').setup({
     branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
+      'ahmedkhalf/project.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
         'nvim-telescope/telescope-fzf-native.nvim',
 
@@ -352,7 +479,7 @@ require('lazy').setup({
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
-            require('telescope.themes').get_dropdown(),
+            require('telescope.themes').get_cursor(),
           },
         },
       }
@@ -360,28 +487,29 @@ require('lazy').setup({
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'projects')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
-      vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-      vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = '[F]ind existing [B]uffers' })
+      vim.keymap.set('n', '<leader>f.', builtin.oldfiles, { desc = '[F]ind Recent Files ("." for repeat)' })
+      vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = '[F]ind [F]ile' })
+      vim.keymap.set('n', '<leader>/', builtin.live_grep, { desc = '[/] Find by Grep' })
+      vim.keymap.set('n', '<leader>*', builtin.grep_string, { desc = '[*] Search current Word' })
+      vim.keymap.set(
+        'n',
+        '<leader>p',
+        "<cmd>lua require('telescope').load_extension('projects')<CR><cmd>Telescope projects<CR>",
+        { desc = '[*] Search current Word' }
+      )
 
-      -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
-        -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-          winblend = 10,
-          previewer = false,
-        })
-      end, { desc = '[/] Fuzzily search in current buffer' })
+      -- local extensions = require('telescope').extensions
+      -- vim.keymap.set('n', '<leader><leader>', extensions.projects, { desc = '[ ] Search Project Files' })
 
       -- It's also possible to pass additional configuration options.
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
@@ -393,9 +521,9 @@ require('lazy').setup({
       end, { desc = '[S]earch [/] in Open Files' })
 
       -- Shortcut for searching your Neovim configuration files
-      vim.keymap.set('n', '<leader>sn', function()
+      vim.keymap.set('n', '<leader>fn', function()
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
-      end, { desc = '[S]earch [N]eovim files' })
+      end, { desc = '[F]ind [N]eovim files' })
     end,
   },
 
@@ -786,7 +914,8 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.opt.background = 'dark'
+      vim.cmd.colorscheme 'oxocarbon'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
