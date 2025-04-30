@@ -154,6 +154,15 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Conceal text
+vim.opt_global.conceallevel = 1
+
+-- for Avante
+vim.opt.laststatus = 3
+
+-- Follow directory of current file
+-- vim.opt.autochdir = true
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -182,14 +191,27 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<leader>h', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<leader>l', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<leader>j', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<leader>k', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<C-h>', ':wincmd h<CR>', { desc = 'Move focus to the left window' })
+vim.keymap.set('n', '<C-j>', ':wincmd j<CR>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-k>', ':wincmd k<CR>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-l>', ':wincmd l<CR>', { desc = 'Move focus to the upper window' })
 
 vim.keymap.set('n', '<leader>ws', '<C-w>s', { desc = 'Split window horizontally' })
 vim.keymap.set('n', '<leader>wv', '<C-w>v', { desc = 'Split window vertically' })
 vim.keymap.set('n', '<leader>wd', '<C-w>q', { desc = 'Close window' })
+
+-- Tab keymaps
+vim.keymap.set('n', '<leader><Tab><Tab>', ':tabs<CR>', { desc = '[Tab]: Show [Tab]s' })
+vim.keymap.set('n', '<leader><Tab>N', ':tabnew<CR>', { desc = '[Tab]: [N]ew' })
+vim.keymap.set('n', '<leader><Tab>d', ':tabclose<CR>', { desc = '[Tab]: [d]elete' })
+vim.keymap.set('n', '<leader><Tab>n', ':tabNext<CR>', { desc = '[Tab]: [n]ext' })
+vim.keymap.set('n', '<leader><Tab>p', ':tabprevious<CR>', { desc = '[Tab]: [p]evious' })
+vim.keymap.set('n', '<leader><Tab>1', ':1tabnext<CR>', { desc = '[Tab]: go to [1]st tab' })
+vim.keymap.set('n', '<leader><Tab>2', ':2tabnext<CR>', { desc = '[Tab]: go to [2]nd tab' })
+vim.keymap.set('n', '<leader><Tab>3', ':3tabnext<CR>', { desc = '[Tab]: go to [3]rd tab' })
+vim.keymap.set('n', '<leader><Tab>4', ':4tabnext<CR>', { desc = '[Tab]: go to [4]th tab' })
+vim.keymap.set('n', '<leader><Tab>5', ':5tabnext<CR>', { desc = '[Tab]: go to [5]th tab' })
+vim.keymap.set('n', '<leader><Tab>6', ':6tabnext<CR>', { desc = '[Tab]: go to [6]th tab' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -233,15 +255,324 @@ require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'nyoom-engineering/oxocarbon.nvim',
   'xiyaowong/transparent.nvim',
+  'github/copilot.vim',
+
   {
-    'natecraddock/workspaces.nvim',
+    'yetone/avante.nvim',
+    event = 'VeryLazy',
+    lazy = false,
+    version = false, -- set this if you want to always pull the latest change
+    opts = {
+      ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
+      provider = 'openai',
+      auto_suggestions_provider = 'openai',
+      claude = {
+        endpoint = 'https://api.anthropic.com',
+        model = 'claude-3-5-sonnet-20241022',
+        temperature = 0,
+        max_tokens = 4096,
+      },
+      openai = {
+        -- api_key_name = 'VENICE_API_KEY',
+        endpoint = 'https://api.venice.ai/api/v1',
+        model = 'deepseek-r1-671b',
+        max_tokens = 12288,
+      },
+      dual_boost = {
+        enabled = false,
+        first_provider = 'openai',
+        second_provider = 'claude',
+        prompt = 'Based on the two reference outputs below, generate a response that incorporates elements from both but reflects your own judgment and unique perspective. Do not provide any explanation, just give the response directly. Reference Output 1: [{{provider1_output}}], Reference Output 2: [{{provider2_output}}]',
+        timeout = 60000, -- Timeout in milliseconds
+      },
+      behaviour = {
+        auto_suggestions = false, -- Experimental stage
+        auto_set_highlight_group = true,
+        auto_set_keymaps = true,
+        auto_apply_diff_after_generation = false,
+        support_paste_from_clipboard = false,
+        minimize_diff = true, -- Whether to remove unchanged lines when applying a code block
+      },
+      mappings = {
+        --- @class AvanteConflictMappings
+        diff = {
+          ours = 'co',
+          theirs = 'ct',
+          all_theirs = 'ca',
+          both = 'cb',
+          cursor = 'cc',
+          next = ']x',
+          prev = '[x',
+        },
+        suggestion = {
+          accept = '<M-l>',
+          next = '<M-]>',
+          prev = '<M-[>',
+          dismiss = '<C-]>',
+        },
+        jump = {
+          next = ']]',
+          prev = '[[',
+        },
+        submit = {
+          normal = '<CR>',
+          insert = '<C-s>',
+        },
+        sidebar = {
+          apply_all = 'A',
+          apply_cursor = 'a',
+          switch_windows = '<Tab>',
+          reverse_switch_windows = '<S-Tab>',
+        },
+      },
+      hints = { enabled = true },
+      windows = {
+        ---@type "right" | "left" | "top" | "bottom"
+        position = 'right', -- the position of the sidebar
+        wrap = true, -- similar to vim.o.wrap
+        width = 30, -- default % based on available width
+        sidebar_header = {
+          enabled = true, -- true, false to enable/disable the header
+          align = 'center', -- left, center, right for title
+          rounded = true,
+        },
+        input = {
+          prefix = '> ',
+          height = 8, -- Height of the input window in vertical layout
+        },
+        edit = {
+          border = 'rounded',
+          start_insert = true, -- Start insert mode when opening the edit window
+        },
+        ask = {
+          floating = false, -- Open the 'AvanteAsk' prompt in a floating window
+          start_insert = true, -- Start insert mode when opening the ask window
+          border = 'rounded',
+          ---@type "ours" | "theirs"
+          focus_on_apply = 'ours', -- which diff to focus after applying
+        },
+      },
+      highlights = {
+        ---@type AvanteConflictHighlights
+        diff = {
+          current = 'DiffText',
+          incoming = 'DiffAdd',
+        },
+      },
+      --- @class AvanteConflictUserConfig
+      diff = {
+        autojump = true,
+        ---@type string | fun(): any
+        list_opener = 'copen',
+        --- Override the 'timeoutlen' setting while hovering over a diff (see :help timeoutlen).
+        --- Helps to avoid entering operator-pending mode with diff mappings starting with `c`.
+        --- Disable by setting to -1.
+        override_timeoutlen = 500,
+      },
+    },
+    build = 'make',
+    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+    dependencies = {
+      'stevearc/dressing.nvim',
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+      --- The below dependencies are optional,
+      'hrsh7th/nvim-cmp', -- autocompletion for avante commands and mentions
+      'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
+      'zbirenbaum/copilot.lua', -- for providers='copilot'
+      {
+        -- support for image pasting
+        'HakonHarnes/img-clip.nvim',
+        event = 'VeryLazy',
+        opts = {
+          -- recommended settings
+          default = {
+            embed_image_as_base64 = false,
+            prompt_for_file_name = false,
+            drag_and_drop = {
+              insert_mode = true,
+            },
+            -- required for Windows users
+            use_absolute_path = true,
+          },
+        },
+      },
+      {
+        -- Make sure to set this up properly if you have lazy=true
+        'MeanderingProgrammer/render-markdown.nvim',
+        opts = {
+          file_types = { 'markdown', 'Avante' },
+        },
+        ft = { 'markdown', 'Avante' },
+      },
+    },
+  },
+
+  {
+    'rest-nvim/rest.nvim',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      opts = function(_, opts)
+        opts.ensure_installed = opts.ensure_installed or {}
+        table.insert(opts.ensure_installed, 'http')
+      end,
+    },
+  },
+
+  {
+    'dgagn/diagflow.nvim',
     config = function()
-      local workspaces = require 'workspaces'
-      workspaces.setup {
-        hooks = {
-          open = { 'Telescope find_files' },
+      require('diagflow').setup()
+    end,
+  },
+
+  {
+    'norcalli/nvim-colorizer.lua',
+    config = function()
+      require('colorizer').setup()
+    end,
+  },
+
+  {
+    'kmontocam/nvim-conda',
+    requires = {
+      'nvim-lua/plenary.nvim',
+    },
+  },
+
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    opts = {},
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' },
+    config = function()
+      require('render-markdown').setup {}
+    end,
+  },
+
+  {
+    'jose-elias-alvarez/null-ls.nvim',
+    config = function()
+      local null_ls = require 'null-ls'
+
+      local group = vim.api.nvim_create_augroup('lsp_format_on_save', { clear = false })
+      local event = 'BufWritePre' -- or "BufWritePost"
+      local async = event == 'BufWritePost'
+
+      null_ls.setup {
+        on_attach = function(client, bufnr)
+          if client.supports_method 'textDocument/formatting' then
+            vim.api.nvim_clear_autocmds { buffer = bufnr, group = group }
+            vim.api.nvim_create_autocmd(event, {
+              buffer = bufnr,
+              group = group,
+              callback = function()
+                vim.lsp.buf.format { bufnr = bufnr, async = async }
+              end,
+              desc = '[lsp] format on save',
+            })
+          end
+        end,
+      }
+    end,
+  },
+
+  {
+    'epwalsh/obsidian.nvim',
+    version = '*',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    config = function()
+      require('obsidian').setup {
+        workspaces = {
+          {
+            name = 'Journal',
+            path = '~/Documents/obsidian/Journal/',
+          },
         },
       }
+      vim.keymap.set('n', '<leader>os', ':ObsidianSearch<CR>', { desc = '[O]bsidian [S]earch' })
+      vim.keymap.set('n', '<leader>on', ':ObsidianNew<CR>', { desc = '[O]bsidian [N]ew' })
+    end,
+  },
+
+  {
+    'flexphere/mdrun.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    filetype = 'markdown',
+    config = function()
+      require('mdrun').setup {
+        cmds = {
+          sh = { 'sh', '-c' },
+          python = { 'python3', '-c' },
+          js = { 'node', '-e' },
+          ts = { 'npx', '--yes', 'tsx', '-e' },
+        },
+      }
+      vim.keymap.set('n', '<leader><enter>', require('mdrun').run, { desc = 'Run CodeBlock' })
+    end,
+  },
+
+  {
+    'm4xshen/autoclose.nvim',
+    config = function()
+      require('autoclose').setup()
+    end,
+  },
+
+  {
+    'nanozuki/tabby.nvim',
+    config = function()
+      local theme = {
+        fill = 'TabLineFill',
+        -- Also you can do this: fill = { fg='#f2e9de', bg='#907aa9', style='italic' }
+        head = 'TabLine',
+        current_tab = 'TabLineSel',
+        tab = 'TabLine',
+        win = 'TabLine',
+        tail = 'TabLine',
+      }
+      require('tabby').setup {
+        line = function(line)
+          return {
+            {},
+            line.tabs().foreach(function(tab)
+              local hl = tab.is_current() and theme.current_tab or theme.tab
+              return {
+                tab.is_current() and ' ' or ' ',
+                tab.number(),
+                tab.name(),
+                ' ',
+                hl = hl,
+                margin = ' ',
+              }
+            end),
+            line.spacer(),
+            line.wins_in_tab(line.api.get_current_tab()).foreach(function(win)
+              return {
+                win.is_current() and ' ' or ' ',
+                '',
+                win.buf_name(),
+                hl = theme.win,
+                margin = ' ',
+              }
+            end),
+            {},
+            hl = theme.fill,
+          }
+        end,
+        -- option = {}, -- setup modules' option,
+      }
+    end,
+  },
+  {
+    'famiu/bufdelete.nvim',
+    config = function()
+      vim.keymap.set('n', '<leader>bd', function()
+        require('bufdelete').bufdelete(0)
+      end, { desc = '[b]uffer [d]elete' })
+      vim.keymap.set('n', '<leader>bn', ':bn<CR>', { desc = '[b]uffer [n]ext' })
+      vim.keymap.set('n', '<leader>bp', ':bp<CR>', { desc = '[b]uffer [p]revious' })
     end,
   },
 
@@ -269,7 +600,21 @@ require('lazy').setup({
       },
     },
   },
-
+  {
+    'christoomey/vim-tmux-navigator',
+    cmd = {
+      'TmuxNavigateLeft',
+      'TmuxNavigateDown',
+      'TmuxNavigateUp',
+      'TmuxNavigateRight',
+    },
+    keys = {
+      { '<C-h>', '<cmd>TmuxNavigateLeft<CR>' },
+      { '<C-j>', '<cmd>TmuxNavigateDown<CR>' },
+      { '<C-k>', '<cmd>TmuxNavigateUp<CR>' },
+      { '<C-l>', '<cmd>TmuxNavigateRight<CR>' },
+    },
+  },
   {
     'utilyre/barbecue.nvim',
     name = 'barbecue',
@@ -312,13 +657,49 @@ require('lazy').setup({
       )
     end,
   },
-
   {
-    'ahmedkhalf/project.nvim',
+    'natecraddock/sessions.nvim',
     config = function()
-      require('project_nvim').setup()
+      require('sessions').setup {
+        events = { 'WinEnter', 'VimLeavePre' },
+        session_filepath = vim.fn.stdpath 'data' .. '/sessions',
+        absolute = true,
+      }
     end,
   },
+  {
+    'natecraddock/workspaces.nvim',
+    config = function()
+      require('workspaces').setup {
+        hooks = {
+          open_pre = {
+            -- If recording, save current session state and stop recording
+            'SessionsStop',
+
+            -- delete all buffers (does not save changes)
+            'silent %bdelete!',
+          },
+          open = {
+            function()
+              require('sessions').load(nil, { silent = true })
+            end,
+          },
+          add = {
+            'SessionsLoad',
+          },
+        },
+      }
+    end,
+  },
+
+  -- {
+  --   'ahmedkhalf/project.nvim',
+  --   config = function()
+  --     require('project_nvim').setup {
+  --       scope_chdir = 'tab',
+  --     }
+  --   end,
+  -- },
 
   {
     'nvim-tree/nvim-web-devicons',
@@ -334,9 +715,6 @@ require('lazy').setup({
       local alpha = require 'alpha'
       local theme = require 'alpha.themes.theta'
       theme.header.val = {
-        [[]],
-        [[]],
-        [[]],
         [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⣶⣶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀]],
         [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⢀⣾⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀]],
         [[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⢰⣶⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀]],
@@ -359,6 +737,20 @@ require('lazy').setup({
         [[⢀⣿⣿⣿⣿⣿⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀]],
         [[⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆]],
       }
+
+      -- Auto center
+      local fn = vim.fn
+      local marginTopPercent = 0.3
+      local headerPadding = fn.max { 2, fn.floor(fn.winheight(0) * marginTopPercent) }
+
+      theme.config.layout = {
+        { type = 'padding', val = headerPadding },
+        theme.header,
+        { type = 'padding', val = 2 },
+        theme.buttons,
+        theme.footer,
+      }
+
       alpha.setup(theme.config)
     end,
   },
@@ -373,11 +765,26 @@ require('lazy').setup({
     config = function()
       local neogit = require 'neogit'
       vim.keymap.set('n', '<leader>gg', function()
-        require('neogit').open { kind = 'vsplit' }
+        require('neogit').open { kind = 'replace' }
       end, { desc = '[G]it' })
       return neogit.setup {}
     end,
   },
+
+  -- {
+  --   'Olical/conjure',
+  --   config = function()
+  --     vim.keymap.set('n', '<leader>ee', ':ConjureEval<CR>', { desc = '[E]val' })
+  --     vim.keymap.set('n', '<leader>er', ':ConjureEvalRange<CR>', { desc = '[E]val [r]ange' })
+  --     vim.keymap.set('n', '<leader>eb', ':ConjureEvalBuffer<CR>', { desc = '[E]val [b]uffer' })
+  --     vim.keymap.set('n', '<leader>es', ':ConjureEvalSelection<CR>', { desc = '[E]val [s]election' })
+  --     vim.keymap.set('n', '<leader>ef', ':ConjureEvalFile<CR>', { desc = '[E]val [f]ile' })
+  --     vim.keymap.set('n', '<leader>el', ':ConjureLoadFile<CR>', { desc = '[E]val [l]oad' })
+  --     vim.keymap.set('n', '<leader>ek', ':ConjureEvalKondo<CR>', { desc = '[E]val] [k]ondo' })
+  --     vim.keymap.set('n', '<leader>et', ':ConjureToggleTrace<CR>', { desc = '[E]val [t]race' })
+  --     vim.keymap.set('n', '<leader>ed', ':ConjureDoc<CR>', { desc = '[E]val [d]oc' })
+  --   end,
+  -- },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -427,6 +834,8 @@ require('lazy').setup({
     dependencies = {
       'nvim-lua/plenary.nvim',
       'ahmedkhalf/project.nvim',
+      'mrcjkb/rustaceanvim',
+      'natecraddock/workspaces.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
         'nvim-telescope/telescope-fzf-native.nvim',
 
@@ -481,13 +890,16 @@ require('lazy').setup({
           ['ui-select'] = {
             require('telescope.themes').get_cursor(),
           },
+          workspaces = {
+            keep_insert = true,
+          },
         },
       }
 
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
-      pcall(require('telescope').load_extension, 'projects')
+      pcall(require('telescope').load_extension, 'workspaces')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -496,17 +908,16 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-      vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = '[F]ind existing [B]uffers' })
+      vim.keymap.set('n', '<leader>bb', builtin.buffers, { desc = 'Find existing [B]uffers' })
       vim.keymap.set('n', '<leader>f.', builtin.oldfiles, { desc = '[F]ind Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = '[F]ind [F]ile' })
+      vim.keymap.set('n', '<leader>fd', ":call delete(expand(' % ')) | bdelete!<CR>", { desc = '[F]ile [Delete]' })
+      vim.keymap.set('n', '<leader><leader>', builtin.find_files, { desc = '[] Find file' })
       vim.keymap.set('n', '<leader>/', builtin.live_grep, { desc = '[/] Find by Grep' })
       vim.keymap.set('n', '<leader>*', builtin.grep_string, { desc = '[*] Search current Word' })
-      vim.keymap.set(
-        'n',
-        '<leader>p',
-        "<cmd>lua require('telescope').load_extension('projects')<CR><cmd>Telescope projects<CR>",
-        { desc = '[*] Search current Word' }
-      )
+      vim.keymap.set('n', '<leader>p', function()
+        require('workspaces').open()
+      end, { desc = 'Find Workspace [P]' })
 
       -- local extensions = require('telescope').extensions
       -- vim.keymap.set('n', '<leader><leader>', extensions.projects, { desc = '[ ] Search Project Files' })
@@ -692,15 +1103,12 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        -- tsserver = {},
         --
 
         lua_ls = {
@@ -717,6 +1125,11 @@ require('lazy').setup({
             },
           },
         },
+        black = {},
+        cssls = {},
+        html = {},
+        jsonls = {},
+        terraformls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -777,12 +1190,21 @@ require('lazy').setup({
         }
       end,
       formatters_by_ft = {
+        python = { 'isort', 'black' },
+        javascript = { 'prettier' },
+        typescript = { 'prettier' },
+        javascriptreact = { 'prettier' },
+        typescriptreact = { 'prettier' },
+        svelte = { 'prettier' },
+        css = { 'prettier' },
+        html = { 'prettier' },
+        json = { 'prettier' },
+        yaml = { 'prettier' },
+        markdown = { 'prettier' },
+        graphql = { 'prettier' },
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        rust = { 'rustup' },
+        swift = { 'swiftformat' },
       },
     },
   },
@@ -821,6 +1243,8 @@ require('lazy').setup({
       --  nvim-cmp does not ship with all sources by default. They are split
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-nvim-lsp-signature-help',
+      'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
     },
     config = function()
@@ -854,7 +1278,8 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<Tab>'] = cmp.mapping.confirm { select = true },
+          ['<Cr>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -966,7 +1391,35 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'latex',
+        'javascript',
+        'python',
+        'typescript',
+        'comment',
+        'css',
+        'Dockerfile',
+        'graphql',
+        'json',
+        'latex',
+        'rust',
+        'scss',
+        'solidity',
+        'toml',
+        'yaml',
+        'swift',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
