@@ -253,9 +253,11 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'tpope/vim-abolish',
   'nyoom-engineering/oxocarbon.nvim',
   'xiyaowong/transparent.nvim',
   'github/copilot.vim',
+  'tidalcycles/vim-tidal',
 
   {
     'yetone/avante.nvim',
@@ -275,8 +277,8 @@ require('lazy').setup({
       openai = {
         -- api_key_name = 'VENICE_API_KEY',
         endpoint = 'https://api.venice.ai/api/v1',
-        model = 'deepseek-r1-671b',
-        max_tokens = 12288,
+        model = 'qwen3-4b',
+        max_tokens = 4096,
       },
       dual_boost = {
         enabled = false,
@@ -484,6 +486,9 @@ require('lazy').setup({
     },
     config = function()
       require('obsidian').setup {
+        ui = {
+          enable = false,
+        },
         workspaces = {
           {
             name = 'Journal',
@@ -1125,7 +1130,7 @@ require('lazy').setup({
             },
           },
         },
-        black = {},
+        ts_ls = {},
         cssls = {},
         html = {},
         jsonls = {},
